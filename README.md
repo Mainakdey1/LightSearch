@@ -5,6 +5,8 @@ This platform, inspired by elasticsearch, has been built for speed and accuracy.
 by the public and suggestions for improvements are always welcome.
 
 MVP architecture:
+
+
 <img width="510" height="664" alt="architecture" src="https://github.com/user-attachments/assets/6b134927-e5a7-4359-8e8d-83c53a1f9cb5" />
 
 This architecture drawing offers a simplified overview of how it works.
