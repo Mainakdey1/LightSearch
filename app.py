@@ -16,7 +16,7 @@ def index_doc(doc_id : str, title : str, content : str):
 
 def search(term : str):
     results = index.search(term)
-    return [doc_store.get_document(doc_id) for score, doc_id in results]
+    return [doc_store.get_document(doc_id) for doc_id, score in results]
 
 #---Test----
 if __name__ == "__main__":
@@ -28,6 +28,3 @@ if __name__ == "__main__":
     for doc in search("elasticsearch"):
         print(doc)
 
-    print("\nSearch results for 'search':")
-    for doc in search("search"):
-        print(doc)

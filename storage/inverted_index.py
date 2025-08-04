@@ -24,16 +24,20 @@ class InvertedIndex:
         idf = math.log((self.num_docs + 1) / (1 + self.doc_freq[term])) + 1
         return tf * idf
 
-    def search(self, term : str):
-        term = term.lower()
-        if term not in self.index:
-            return []
-        scores = []
-        for doc_id in self.index[term]:
-            score = self.compute_tfidf(term, doc_id)
-            scores.append((score, doc_id))
-        scores.sort(reverse= True)
-        return scores
+    def search(self, query: str):
+        tokens = query.lower().split()
+        doc_scores = defaultdict(float)
+
+        for term in tokens:
+            if term not in self.index:
+                continue
+            for doc_id in self.index[term]:
+                score = self.compute_tfidf(term, doc_id)
+                doc_scores[doc_id] += score
+
+        # Sort by score
+        sorted_docs = sorted(doc_scores.items(), key=lambda x: x[1], reverse=True)
+        return sorted_docs
 
     def all_terms(self):
         return self.index
