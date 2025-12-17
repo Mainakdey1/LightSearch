@@ -5,19 +5,20 @@ import time
 app = FastAPI()
 redis_client = redis.Redis(host = 'localhost', port=6379, db=0, decode_responses=True)
 
-RATE_LIMIT = 5
+RATE_LIMITS = {'/': 5, '/health' : 20}
 WINDOW_SIZE = 60
 
 def rate_limiter(request: Request):
     client_ip = request.client.host
-    key = f"rate_limit:{client_ip}"
-
+    path = request.url.path
+    limit = RATE_LIMITS.get(path, 10)
+    key = f"rate_limit:{client_ip}:{path}"
     current = redis_client.get(key)
 
     if current is None:
         redis_client.set(key, 1, ex=WINDOW_SIZE)
         return
-    if int(current) >= RATE_LIMIT:
+    if int(current) >= limit:
         raise HTTPException(status_code=429,
                             detail="Too many requests. Please try again later.")
     redis_client.incr(key)
