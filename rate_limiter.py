@@ -1,0 +1,36 @@
+from fastapi import FastAPI, Request, HTTPException
+import redis
+import time
+ 
+app = FastAPI()
+redis_client = redis.Redis(host = 'localhost', port=6379, db=0, decode_responses=True)
+
+RATE_LIMIT = 5
+WINDOW_SIZE = 60
+
+def rate_limiter(request: Request):
+    client_ip = request.client.host
+    key = f"rate_limit:{client_ip}"
+
+    current = redis_client.get(key)
+
+    if current is None:
+        redis_client.set(key, 1, ex=WINDOW_SIZE)
+        return
+    if int(current) >= RATE_LIMIT:
+        raise HTTPException(status_code=429,
+                            detail="Too many requests. Please try again later.")
+    redis_client.incr(key)
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    rate_limiter(request)
+    response = await call_next(request)
+    return response
+
+@app.get('/')
+def root():
+    return {'message': 'Hello, you are within the rate limit'}
+@app.get('/health')
+def health():
+    return {'status': 'ok'}
+    
